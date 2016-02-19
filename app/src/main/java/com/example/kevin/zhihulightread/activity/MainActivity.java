@@ -1,7 +1,9 @@
-package com.example.kevin.zhihulightread;
+package com.example.kevin.zhihulightread.activity;
 
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -10,8 +12,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.kevin.zhihulightread.R;
+import com.example.kevin.zhihulightread.fragment.ContentFragment;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String FRAGMENT_CONTENT = "fragment_content";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +36,20 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        initFragment();
+
+    }
+
+    /**
+     * 初始化Fragment
+     */
+    private void initFragment() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();//开启事务
+        transaction.replace(R.id.fl_content, new ContentFragment(), FRAGMENT_CONTENT);
+
+        transaction.commit();//提交事务
     }
 
     @Override
