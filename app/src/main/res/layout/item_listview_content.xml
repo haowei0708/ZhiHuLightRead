@@ -8,16 +8,22 @@
         android:id="@+id/iv_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="5dp" />
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
+        />
 
     <TextView
         android:id="@+id/tv_title"
+        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="3"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginBottom="10dp"
         android:layout_toRightOf="@id/iv_content"
-        android:text="新闻简介新闻新闻闻介新闻简介新闻简介新闻简介新闻简介新闻简简介新闻简介新闻简介新闻简简介新闻简介新闻简介新闻简介新闻简新闻简介新"
         android:textColor="@android:color/black"
         android:textSize="18sp" />
 
