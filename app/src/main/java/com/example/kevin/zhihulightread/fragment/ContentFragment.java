@@ -1,6 +1,7 @@
 package com.example.kevin.zhihulightread.fragment;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,13 +9,16 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.kevin.zhihulightread.R;
+import com.example.kevin.zhihulightread.activity.WebNewsActivity;
 import com.example.kevin.zhihulightread.bean.LatestNewsBean;
+import com.example.kevin.zhihulightread.global.Constants;
 import com.example.kevin.zhihulightread.utils.LogUtils;
 import com.example.kevin.zhihulightread.utils.UIUtils;
 import com.google.gson.Gson;
@@ -30,7 +34,7 @@ import com.lidroid.xutils.http.client.HttpRequest;
  * 邮箱：haowei0708@163.com
  * 描述：主页面内容的Fragment
  */
-public class ContentFragment extends Fragment {
+public class ContentFragment extends Fragment implements AdapterView.OnItemClickListener {
     public Activity mActivity;
     private ListView lvContent;
     private LatestNewsBean newsBean;
@@ -110,6 +114,29 @@ public class ContentFragment extends Fragment {
         //设置listView
         ContentAdapter adapter = new ContentAdapter();
         lvContent.setAdapter(adapter);
+
+
+        lvContent.setOnItemClickListener(this);
+    }
+
+    /**
+     * listView的点击事件
+     * @param parent
+     * @param view
+     * @param position
+     * @param id
+     */
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        //获取到点击的item的id
+        String newsID = newsBean.stories.get(position).id;
+        String url = Constants.URLS.BASEURL + newsID;
+        LogUtils.s(url);
+
+        Intent intent = new Intent(mActivity, WebNewsActivity.class);
+        intent.putExtra("webUrl",url);//该url获取的数据是一个bean，也需要解析
+        startActivity(intent);
     }
 
 

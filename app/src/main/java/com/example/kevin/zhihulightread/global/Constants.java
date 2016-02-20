@@ -14,11 +14,7 @@ public class Constants {
     public static final int PAGESIZE = 20;
 
     public static final class URLS{
-        public static String BASEURL = "http://10.0.3.2:8080/GooglePlayServer/";
-        public static String ICON = "http://10.0.3.2:8080/GooglePlayServer/image?name=";
+        public static String BASEURL = "http://news-at.zhihu.com/api/4/news/";
     }
 
-    public static final class PAY{
-
-    }
 }

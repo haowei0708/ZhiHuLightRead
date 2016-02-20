@@ -8,7 +8,14 @@ import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 
 import com.example.kevin.zhihulightread.R;
+import com.example.kevin.zhihulightread.bean.StartImageBean;
+import com.google.gson.Gson;
 import com.lidroid.xutils.BitmapUtils;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.http.client.HttpRequest;
 
 public class SplashAcitivity extends AppCompatActivity {
 
@@ -20,13 +27,49 @@ public class SplashAcitivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_acitivity);
 
         ivStart = (ImageView) findViewById(R.id.iv_start);
-        initView();
+        initData();
     }
 
-    private void initView() {
-        String url = "https://pic1.zhimg.com/86417480c1af008ddd456eb73b09ca4c.jpg";
+    /**
+     * 初始化数据
+     */
+    private void initData() {
+        getDataFromServer();
+    }
+
+    private void getDataFromServer() {
+        String url = "http://news-at.zhihu.com/api/4/start-image/1080*1776";
+        HttpUtils httpUtils = new HttpUtils();
+        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+            @Override
+            public void onSuccess(ResponseInfo<String> responseInfo) {
+                String jsonString = responseInfo.result;
+                parseData(jsonString);
+            }
+
+            @Override
+            public void onFailure(HttpException e, String s) {
+                System.out.println("error:" + e);
+            }
+        });
+    }
+
+    /**
+     * 解析数据
+     * @param jsonString json字符串
+     */
+    private void parseData(String jsonString) {
+        Gson gson = new Gson();
+        StartImageBean startImageBean = gson.fromJson(jsonString, StartImageBean.class);
+        String imgUrl = startImageBean.img;
+
+        initView(imgUrl);
+    }
+
+    private void initView(String imgUrl) {
+
         BitmapUtils bitmapUtils = new BitmapUtils(this);
-        bitmapUtils.display(ivStart,url);
+        bitmapUtils.display(ivStart,imgUrl);
 
         initAnimation();
     }
