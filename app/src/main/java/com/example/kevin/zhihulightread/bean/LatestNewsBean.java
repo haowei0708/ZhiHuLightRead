@@ -10,6 +10,7 @@ import java.util.List;
 public class LatestNewsBean {
 
     public List<Stories> stories;
+    public List<Top_stories> top_stories;
 
     public class Stories {
         public String ga_prefix;//	021922
@@ -19,7 +20,7 @@ public class LatestNewsBean {
         public String type;// 0   ，乎日报可能将某个主题日报的站外文章推送至知乎日报首页时type为1
     }
 
-    public List top_stories;
+
 
     public class Top_stories{
        public String  ga_prefix	;//  021920
