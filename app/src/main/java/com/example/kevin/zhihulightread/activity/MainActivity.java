@@ -1,5 +1,6 @@
 package com.example.kevin.zhihulightread.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
@@ -30,7 +31,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("今日热闻");
+//        toolbar.setTitle("今日热闻");
         setSupportActionBar(toolbar);
 
 
@@ -78,15 +79,16 @@ public class MainActivity extends AppCompatActivity
     /**
      * 刷新Fragment带动画
      */
-    private void refreshFragment(){
+    private void refreshFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();//开启事务
         //切换的动画
-        transaction.setCustomAnimations(R.anim.slide_in_from_right,R.anim.slide_out_to_left);
+        transaction.setCustomAnimations(R.anim.slide_in_from_right, R.anim.slide_out_to_left);
         transaction.replace(R.id.fl_content, new ContentFragment(), FRAGMENT_CONTENT);
 
         transaction.commit();//提交事务
     }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -109,6 +111,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this,AboutMeActivity.class));
             return true;
         }
 
@@ -118,14 +121,34 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        //先得到contentFragment，再用ViewPager替换页面
+
         // 处理navigation view条目
         int id = item.getItemId();
 
-        if (id == R.id.nav_content) {
+        if (id == R.id.nav_psychology) {
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_recommend) {
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_movie) {
+
+        } else if (id == R.id.nav_no_bored) {
+
+        } else if (id == R.id.nav_design) {
+
+        } else if (id == R.id.nav_company) {
+
+        } else if (id == R.id.nav_business) {
+
+        } else if (id == R.id.nav_net_safe) {
+
+        } else if (id == R.id.nav_start_game) {
+
+        } else if (id == R.id.nav_music) {
+
+        } else if (id == R.id.nav_cartoon) {
+
+        } else if (id == R.id.nav_sports) {
 
         }
 
@@ -136,7 +159,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK){
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             exit();
             return false;//复写返回键的单击事件
         }

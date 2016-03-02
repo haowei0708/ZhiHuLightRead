@@ -3,19 +3,54 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_content"
+            android:id="@+id/nav_psychology"
             android:icon="@drawable/ic_menu_camera"
-            android:title="最近一周内容" />
+            android:title="日常心理学" />
 
         <item
-            android:id="@+id/nav_share"
+            android:id="@+id/nav_recommend"
             android:icon="@drawable/ic_menu_share"
-            android:title="分享" />
+            android:title="用户推荐日报" />
         <item
-            android:id="@+id/nav_send"
+            android:id="@+id/nav_movie"
             android:icon="@drawable/ic_menu_send"
-            android:title="发送" />
-
+            android:title="电影日报" />
+        <item
+            android:id="@+id/nav_no_bored"
+            android:icon="@drawable/ic_menu_send"
+            android:title="不许无聊" />
+        <item
+            android:id="@+id/nav_design"
+            android:icon="@drawable/ic_menu_send"
+            android:title="设计日报" />
+        <item
+            android:id="@+id/nav_company"
+            android:icon="@drawable/ic_menu_send"
+            android:title="大公司日报" />
+        <item
+            android:id="@+id/nav_business"
+            android:icon="@drawable/ic_menu_send"
+            android:title="财经日报" />
+        <item
+            android:id="@+id/nav_net_safe"
+            android:icon="@drawable/ic_menu_send"
+            android:title="互联网安全" />
+        <item
+            android:id="@+id/nav_start_game"
+            android:icon="@drawable/ic_menu_send"
+            android:title="开始游戏" />
+        <item
+            android:id="@+id/nav_music"
+            android:icon="@drawable/ic_menu_send"
+            android:title="音乐日报" />
+        <item
+            android:id="@+id/nav_cartoon"
+            android:icon="@drawable/ic_menu_send"
+            android:title="动漫日报" />
+        <item
+            android:id="@+id/nav_sports"
+            android:icon="@drawable/ic_menu_send"
+            android:title="体育日报" />
     </group>
 
 

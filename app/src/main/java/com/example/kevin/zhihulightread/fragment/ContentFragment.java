@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -40,6 +41,13 @@ import com.lidroid.xutils.http.ResponseInfo;
 import com.lidroid.xutils.http.callback.RequestCallBack;
 import com.lidroid.xutils.http.client.HttpRequest;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * 作者：Created by Kevin on 2016/2/19.
  * 邮箱：haowei0708@163.com
@@ -52,8 +60,13 @@ public class ContentFragment extends BaseFragment implements AdapterView.OnItemC
     private TextView mTvTitle;
     private LinearLayout llContainer; //点的容器
     private SwipeRefreshLayout swipeRefreshLayout;//下拉刷新
+    private ListViewContentAdapter mAdapter;
     private boolean isNoDot = true;
+    private int refreshTimes = 0;//加载更多次数，用于获取过往的日期
+    private boolean isLoadMore;//是否正在加载更多
+    private List<LatestNewsBean.StoriesEntity> storiesEntities = new ArrayList<LatestNewsBean.StoriesEntity>();
     String url = "http://news-at.zhihu.com/api/4/news/latest";
+    private String date;
 
 
     /**
@@ -136,8 +149,9 @@ public class ContentFragment extends BaseFragment implements AdapterView.OnItemC
 
 
         //设置listView
-        ListViewContentAdapter adapter = new ListViewContentAdapter();
-        lvContent.setAdapter(adapter);
+        mAdapter = new ListViewContentAdapter();
+        storiesEntities = newsBean.getStories();
+        lvContent.setAdapter(mAdapter);
 
         lvContent.setOnItemClickListener(this);
 
@@ -209,6 +223,73 @@ public class ContentFragment extends BaseFragment implements AdapterView.OnItemC
 
             }
         });
+
+        lvContent.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (scrollState == SCROLL_STATE_IDLE || scrollState == SCROLL_STATE_FLING) {
+
+                    if (lvContent.getLastVisiblePosition() == lvContent.getCount() - 1) {//当划到最后一个的时候
+                        //加载更多数据
+
+                        //得到before的日期：知乎birthday 2013年5月19 之前没内容，但是我不相信有人能滑到这个时间。、所以不处理
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.add(Calendar.DAY_OF_MONTH, -refreshTimes);
+                        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.CHINA);
+                        date = dateFormat.format(calendar.getTime());
+                        String dateUrl = Constants.URLS.BEFORENEWSURL + date;
+                        LogUtils.sf(dateUrl);
+
+                        loadMoreData(dateUrl);
+
+                    }
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+            }
+        });
+    }
+
+    /**
+     * 加载更多数据
+     *
+     * @param dateUrl
+     */
+    private void loadMoreData(String dateUrl) {
+        HttpUtils httpUtils = new HttpUtils();
+        httpUtils.send(HttpRequest.HttpMethod.GET, dateUrl, new RequestCallBack<String>() {
+            @Override
+            public void onSuccess(ResponseInfo<String> responseInfo) {
+                String jsonString = responseInfo.result;
+
+                parseBeforeData(jsonString);
+            }
+
+            @Override
+            public void onFailure(HttpException error, String msg) {
+                System.out.println("error:" + error);
+            }
+        });
+    }
+
+    /**
+     * 解析过往消息
+     *
+     * @param jsonString
+     */
+    private void parseBeforeData(String jsonString) {
+        Gson gson = new Gson();
+        LatestNewsBean beforeNewsBean = gson.fromJson(jsonString, LatestNewsBean.class);
+        List<LatestNewsBean.StoriesEntity> stories = beforeNewsBean.getStories();
+
+        storiesEntities.addAll(stories);
+
+        mAdapter.notifyDataSetChanged();
+
+        refreshTimes++;//刷新次数增加一，改变时间
     }
 
     /**
@@ -271,17 +352,17 @@ public class ContentFragment extends BaseFragment implements AdapterView.OnItemC
 
         @Override
         public int getCount() {
-            return newsBean.getStories().size();
+            return storiesEntities.size();
         }
 
         @Override
         public Object getItem(int position) {
-            return null;
+            return storiesEntities.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            return 0;
+            return position;
         }
 
         @Override
@@ -301,9 +382,9 @@ public class ContentFragment extends BaseFragment implements AdapterView.OnItemC
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.tvTitle.setText(newsBean.getStories().get(position).getTitle());
+            holder.tvTitle.setText(storiesEntities.get(position).getTitle());
 
-            bitmapUtils.display(holder.icon, newsBean.getStories().get(position).getImages().get(0));
+            bitmapUtils.display(holder.icon, storiesEntities.get(position).getImages().get(0));
 
             return convertView;
         }
@@ -312,6 +393,15 @@ public class ContentFragment extends BaseFragment implements AdapterView.OnItemC
     class ViewHolder {
         ImageView icon;
         TextView tvTitle;
+    }
+
+    /**
+     * 将数字日期转换位带中文的日期20160302--->2016年03月02日
+     *
+     * @return
+     */
+    private String convertDate() {
+        return null;
     }
 
     /**

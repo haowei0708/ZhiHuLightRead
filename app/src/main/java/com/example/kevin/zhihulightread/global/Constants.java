@@ -16,6 +16,8 @@ public class Constants {
     public static final class URLS{
         public static String BASEURL = "http://news-at.zhihu.com/api/4/";
         public static String NEWSURL = "http://news-at.zhihu.com/api/4/news/";
+        public static String BEFORENEWSURL = "http://news.at.zhihu.com/api/4/news/before/";
+
     }
 
 }
