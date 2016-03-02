@@ -3,11 +3,15 @@ package com.example.kevin.zhihulightread.fragment;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -21,8 +25,10 @@ import android.widget.TextView;
 
 import com.example.kevin.zhihulightread.R;
 import com.example.kevin.zhihulightread.activity.WebNewsActivity;
+import com.example.kevin.zhihulightread.base.BaseFragment;
 import com.example.kevin.zhihulightread.bean.LatestNewsBean;
 import com.example.kevin.zhihulightread.global.Constants;
+import com.example.kevin.zhihulightread.utils.CacheUtil;
 import com.example.kevin.zhihulightread.utils.DensityUtil;
 import com.example.kevin.zhihulightread.utils.LogUtils;
 import com.example.kevin.zhihulightread.utils.UIUtils;
@@ -37,78 +43,61 @@ import com.lidroid.xutils.http.client.HttpRequest;
 /**
  * 作者：Created by Kevin on 2016/2/19.
  * 邮箱：haowei0708@163.com
- * 描述：主页面内容的Fragment
+ * 描页面内容的Fragment
  */
-public class ContentFragment extends Fragment implements AdapterView.OnItemClickListener {
-    public Activity mActivity;
+public class ContentFragment extends BaseFragment implements AdapterView.OnItemClickListener {
     private ListView lvContent;
     private LatestNewsBean newsBean;
     private ViewPager mViewPager;
     private TextView mTvTitle;
     private LinearLayout llContainer; //点的容器
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mActivity = getActivity();
-
-    }
-
-    //处理fragment的布局
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return initView();
-    }
-
-
-    //依附的Activity被创建完成
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        initData();
-    }
-
-    /**
-     * 初始化布局
-     *
-     * @return
-     */
-    private View initView() {
-        View view = View.inflate(mActivity, R.layout.fragment_content, null);
-        lvContent = (ListView) view.findViewById(R.id.lv_content);
-        View headerView = View.inflate(mActivity, R.layout.header_view_pager, null);
-        mViewPager = (ViewPager) headerView.findViewById(R.id.view_pager);
-        llContainer= (LinearLayout) headerView.findViewById(R.id.ll_container);//小点的容器
-
-        mTvTitle = (TextView) headerView.findViewById(R.id.tv_title);
-        //添加头布局
-        lvContent.addHeaderView(headerView);
-        return view;
-    }
+    private SwipeRefreshLayout swipeRefreshLayout;//下拉刷新
+    private boolean isNoDot = true;
+    String url = "http://news-at.zhihu.com/api/4/news/latest";
 
 
     /**
      * 初始化数据
      */
-    private void initData() {
+    public void initData() {
+        String cache = CacheUtil.getCache(UIUtils.getContext(), url);
+        if (!TextUtils.isEmpty(cache)) {
+            parseData(cache);
+        }
         getDataFromServer();
+    }
+
+    @Override
+    protected View initView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = View.inflate(mActivity, R.layout.fragment_content, null);
+        swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
+
+        lvContent = (ListView) view.findViewById(R.id.lv_content);
+        View headerView = View.inflate(mActivity, R.layout.header_view_pager, null);
+        mViewPager = (ViewPager) headerView.findViewById(R.id.view_pager);
+        llContainer = (LinearLayout) headerView.findViewById(R.id.ll_container);//小点的容器
+
+        mTvTitle = (TextView) headerView.findViewById(R.id.tv_title);
+        //添加头布局
+        lvContent.addHeaderView(headerView);
+
+
+        return view;
     }
 
     /**
      * 从网络请求数据
      */
     private void getDataFromServer() {
-        String url = "http://news-at.zhihu.com/api/4/news/latest";
+
         HttpUtils httpUtils = new HttpUtils();
         httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
             @Override
             public void onSuccess(ResponseInfo<String> responseInfo) {
                 String result = responseInfo.result;
 
-                LogUtils.s(result);
+                //设置缓存
+                CacheUtil.setCache(UIUtils.getContext(), url, result);
 
                 parseData(result);
             }
@@ -128,18 +117,23 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
     private void parseData(String result) {
         Gson gson = new Gson();
         newsBean = gson.fromJson(result, LatestNewsBean.class);
-
         //设置viewpager
         ViewPagerContentAdapter viewPageradapter = new ViewPagerContentAdapter();
         mViewPager.setAdapter(viewPageradapter);
 
-        //动态添加点
-        addPoints(newsBean.top_stories.size());
+        if (isNoDot) {
+            //动态添加点
+            addPoints(newsBean.getTop_stories().size());
+
+            isNoDot = false;
+        }
+
 
         //实现无限轮播的左边
-        int extra = Integer.MAX_VALUE / 2 % newsBean.top_stories.size();
+        int extra = Integer.MAX_VALUE / 2 % newsBean.getTop_stories().size();
         int index = Integer.MAX_VALUE / 2 - extra;
         mViewPager.setCurrentItem(index);
+
 
         //设置listView
         ListViewContentAdapter adapter = new ListViewContentAdapter();
@@ -149,12 +143,11 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
 
 
         //初始化第一个图像的标题
-        mTvTitle.setText(newsBean.top_stories.get(0).title);
+        mTvTitle.setText(newsBean.getTop_stories().get(0).getTitle());
 
         initEvent();
-
-
     }
+
 
     /**
      * 初始化事件
@@ -170,11 +163,11 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
 
             @Override
             public void onPageSelected(int position) {
-                position = position % newsBean.top_stories.size();
-                mTvTitle.setText(newsBean.top_stories.get(position).title);
+                position = position % newsBean.getTop_stories().size();
+                mTvTitle.setText(newsBean.getTop_stories().get(position).getTitle());
 
-                for (int i = 0; i < newsBean.top_stories.size(); i++) {
-                    position = position % newsBean.top_stories.size();
+                for (int i = 0; i < newsBean.getTop_stories().size(); i++) {
+                    position = position % newsBean.getTop_stories().size();
                     //还原背景
                     View indicatorView = llContainer.getChildAt(i);
                     indicatorView.setBackgroundResource(R.drawable.dot_normal);
@@ -191,11 +184,36 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
             }
         });
 
+        //下拉刷新按钮的颜色
+        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_dark);
+        //下拉刷新的监听事件
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // TODO: 2016/3/2 主线程阻塞，待解决！
+//                getDataFromServer();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //所以这里模拟一个下拉刷新
+                        SystemClock.sleep(2000);
+                        mActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                swipeRefreshLayout.setRefreshing(false);
+                            }
+                        });
 
+                    }
+                }).start();
+
+            }
+        });
     }
 
     /**
      * 动态添加indicator的小点
+     *
      * @param size
      */
     private void addPoints(int size) {
@@ -229,8 +247,8 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
 
         if (position > 0) {//由于有headView
             //获取到点击的item的id
-            String newsID = newsBean.stories.get(position - 1).id;
-            String url = Constants.URLS.BASEURL + newsID;
+            int newsID = newsBean.getStories().get(position - 1).getId();
+            String url = Constants.URLS.NEWSURL + newsID;
 
             Intent intent = new Intent(mActivity, WebNewsActivity.class);
             intent.putExtra("webUrl", url);//该url获取的数据是一个bean，也需要解析
@@ -253,7 +271,7 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
 
         @Override
         public int getCount() {
-            return newsBean.stories.size();
+            return newsBean.getStories().size();
         }
 
         @Override
@@ -283,9 +301,9 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            holder.tvTitle.setText(newsBean.stories.get(position).title);
+            holder.tvTitle.setText(newsBean.getStories().get(position).getTitle());
 
-            bitmapUtils.display(holder.icon, newsBean.stories.get(position).images.get(0));
+            bitmapUtils.display(holder.icon, newsBean.getStories().get(position).getImages().get(0));
 
             return convertView;
         }
@@ -315,16 +333,16 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
         public Object instantiateItem(ViewGroup container, int position) {
 
             //实现无限轮播
-            position = position % newsBean.top_stories.size();
+            position = position % newsBean.getTop_stories().size();
 
-            final LatestNewsBean.Top_stories top_stories = newsBean.top_stories.get(position);
+            final LatestNewsBean.TopStoriesEntity topStoriesEntity = newsBean.getTop_stories().get(position);
 
             ImageView iv = new ImageView(mActivity);
             iv.setScaleType(ImageView.ScaleType.FIT_XY);
 
 //            TextView tvTitle = (TextView) headerView.findViewById(R.id.tv_title);
             BitmapUtils bitmapUtils = new BitmapUtils(mActivity);
-            bitmapUtils.display(iv, top_stories.image);
+            bitmapUtils.display(iv, topStoriesEntity.getImage());
 
 //            TextView tv = new TextView(mActivity);
 //            tv.setText(top_stories.title);
@@ -334,8 +352,8 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
             iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String newsID = top_stories.id;
-                    String url = Constants.URLS.BASEURL + newsID;
+                    int newsID = topStoriesEntity.getId();
+                    String url = Constants.URLS.NEWSURL + newsID;
 
                     Intent intent = new Intent(mActivity, WebNewsActivity.class);
                     intent.putExtra("webUrl", url);//该url获取的数据是一个bean，也需要解析
@@ -351,4 +369,6 @@ public class ContentFragment extends Fragment implements AdapterView.OnItemClick
         }
 
     }
+
+
 }

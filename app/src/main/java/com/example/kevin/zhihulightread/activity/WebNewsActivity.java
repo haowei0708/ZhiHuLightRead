@@ -4,7 +4,8 @@ import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -40,25 +41,36 @@ public class WebNewsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.web_news);
-
-        imageView = (ImageView) findViewById(R.id.iv_detail);
         mWebView = (WebView) findViewById(R.id.wv_web);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
+        mWebView.setVerticalScrollBarEnabled(false);
+        imageView = (ImageView) findViewById(R.id.iv_detail);
         tvTitle = (TextView) findViewById(R.id.tv_title);
         tvDesc = (TextView) findViewById(R.id.tv_desc);
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
 
         WebSettings settings = mWebView.getSettings();
 
         settings.setJavaScriptEnabled(true);
+
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                return super.onJsAlert(view, url, message, result);
+            }
+        });
+
         settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        // 开启DOM storage API 功能
-        settings.setDomStorageEnabled(true);
-        // 开启database storage API功能
-        settings.setDatabaseEnabled(true);
-        // 开启Application Cache功能
-        settings.setAppCacheEnabled(true);
+//        // 开启DOM storage API 功能
+//        settings.setDomStorageEnabled(true);
+//        // 开启database storage API功能
+//        settings.setDatabaseEnabled(true);
+//        // 开启Application Cache功能
+//        settings.setAppCacheEnabled(true);
 
         settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+
 
         mWebView.setWebViewClient(new WebViewClient() {
             //开始加载
@@ -85,7 +97,9 @@ public class WebNewsActivity extends AppCompatActivity {
                 view.loadUrl(url); //表示不跳转 在WebView中加载
                 return super.shouldOverrideUrlLoading(view, url);
             }
+
         });
+
 
         String url = getIntent().getStringExtra("webUrl");
 
@@ -129,6 +143,7 @@ public class WebNewsActivity extends AppCompatActivity {
         BitmapUtils bitmapUtils = new BitmapUtils(this);
         bitmapUtils.display(imageView, detailBean.getImage());
 
+        //webView加载内容
         String css = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/news.css\" type=\"text/css\">";
         String html = "<html><head>" + css + "</head><body>" + detailBean.getBody() + "</body></html>";
         html = html.replace("<div class=\"img-place-holder\">", "");

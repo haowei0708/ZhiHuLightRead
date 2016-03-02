@@ -6,5 +6,13 @@ package com.example.kevin.zhihulightread.bean;
  * 描述：
  */
 public class StartImageBean {
-    public String img;
+    private String img;
+
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
+    }
 }

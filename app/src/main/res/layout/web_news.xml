@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    >
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="230dp">
+        android:layout_height="230dp" >
 
         <ImageView
             android:id="@+id/iv_detail"
@@ -38,25 +42,26 @@
 
     </FrameLayout>
 
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="15dp">
+        >
 
         <WebView
             android:id="@+id/wv_web"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_x="7dp"
-            android:layout_y="90dp" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </WebView>
 
         <ProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center"
+
             />
     </FrameLayout>
 
 </LinearLayout>
+</ScrollView>
