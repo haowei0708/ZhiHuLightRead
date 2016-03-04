@@ -3,11 +3,12 @@ package com.example.kevin.zhihulightread.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,20 +18,36 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.kevin.zhihulightread.R;
-import com.example.kevin.zhihulightread.fragment.ContentFragment;
+import com.example.kevin.zhihulightread.factory.FragmentFactory;
+import com.example.kevin.zhihulightread.utils.LogUtils;
+import com.example.kevin.zhihulightread.view.NoScrollViewPager;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String FRAGMENT_CONTENT = "fragment_content";
     private long exitTime = 0;
-//    private SwipeRefreshLayout swipeRefreshLayout;//下拉刷新
+    private NoScrollViewPager mViewPager;
+    private Toolbar toolbar;
+    //    private SwipeRefreshLayout swipeRefreshLayout;//下拉刷新
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        initView();
+//        initFragment();
+
+        initEvent();
+
+    }
+
+    /**
+     * 初始化view
+     */
+    private void initView() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        toolbar.setTitle("今日热闻");
         setSupportActionBar(toolbar);
 
@@ -44,12 +61,12 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        mViewPager = (NoScrollViewPager) findViewById(R.id.view_pager);
+
+        MainPagerAdapter adapter = new MainPagerAdapter(getSupportFragmentManager());
+        mViewPager.setAdapter(adapter);
+
 //        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
-
-        initFragment();
-
-        initEvent();
-
     }
 
     private void initEvent() {
@@ -65,29 +82,6 @@ public class MainActivity extends AppCompatActivity
 //        });
     }
 
-    /**
-     * 初始化Fragment
-     */
-    private void initFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();//开启事务
-        transaction.replace(R.id.fl_content, new ContentFragment(), FRAGMENT_CONTENT);
-
-        transaction.commit();//提交事务
-    }
-
-    /**
-     * 刷新Fragment带动画
-     */
-    private void refreshFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();//开启事务
-        //切换的动画
-        transaction.setCustomAnimations(R.anim.slide_in_from_right, R.anim.slide_out_to_left);
-        transaction.replace(R.id.fl_content, new ContentFragment(), FRAGMENT_CONTENT);
-
-        transaction.commit();//提交事务
-    }
 
     @Override
     public void onBackPressed() {
@@ -111,7 +105,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this,AboutMeActivity.class));
+            startActivity(new Intent(this, AboutMeActivity.class));
             return true;
         }
 
@@ -126,30 +120,45 @@ public class MainActivity extends AppCompatActivity
         // 处理navigation view条目
         int id = item.getItemId();
 
-        if (id == R.id.nav_psychology) {
-
+        if (id == R.id.nav_home) {
+            mViewPager.setCurrentItem(0, false);
+            toolbar.setTitle("今日热闻");
+        } else if (id == R.id.nav_psychology) {
+            mViewPager.setCurrentItem(1, false);
+            toolbar.setTitle("日常心理学");
         } else if (id == R.id.nav_recommend) {
-
+            mViewPager.setCurrentItem(2, false);
+            toolbar.setTitle("用户推荐日报");
         } else if (id == R.id.nav_movie) {
-
+            mViewPager.setCurrentItem(3, false);
+            toolbar.setTitle("电影日报");
         } else if (id == R.id.nav_no_bored) {
-
+            mViewPager.setCurrentItem(4, false);
+            toolbar.setTitle("不许无聊");
         } else if (id == R.id.nav_design) {
-
+            mViewPager.setCurrentItem(5, false);
+            toolbar.setTitle("设计日报");
         } else if (id == R.id.nav_company) {
-
+            mViewPager.setCurrentItem(6, false);
+            toolbar.setTitle("大公司日报");
         } else if (id == R.id.nav_business) {
-
+            mViewPager.setCurrentItem(7, false);
+            toolbar.setTitle("财经日报");
         } else if (id == R.id.nav_net_safe) {
-
+            mViewPager.setCurrentItem(8, false);
+            toolbar.setTitle("互联网安全");
         } else if (id == R.id.nav_start_game) {
-
+            mViewPager.setCurrentItem(9, false);
+            toolbar.setTitle("开始游戏");
         } else if (id == R.id.nav_music) {
-
+            mViewPager.setCurrentItem(10, false);
+            toolbar.setTitle("音乐日报");
         } else if (id == R.id.nav_cartoon) {
-
+            mViewPager.setCurrentItem(11, false);
+            toolbar.setTitle("动漫日报");
         } else if (id == R.id.nav_sports) {
-
+            mViewPager.setCurrentItem(12, false);
+            toolbar.setTitle("体育日报");
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -177,6 +186,24 @@ public class MainActivity extends AppCompatActivity
         } else {
             finish();
             System.exit(0);
+        }
+    }
+
+    private class MainPagerAdapter extends FragmentStatePagerAdapter {
+
+        public MainPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            LogUtils.sf("正在加载第" + position + "个页面");
+            return FragmentFactory.getFragment(position);
+        }
+
+        @Override
+        public int getCount() {
+            return 13;
         }
     }
 }

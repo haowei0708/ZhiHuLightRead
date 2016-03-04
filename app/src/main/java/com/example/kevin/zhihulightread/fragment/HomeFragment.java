@@ -53,7 +53,7 @@ import java.util.Locale;
  * 邮箱：haowei0708@163.com
  * 描页面内容的Fragment
  */
-public class ContentFragment extends BaseFragment implements AdapterView.OnItemClickListener {
+public class HomeFragment extends BaseFragment implements AdapterView.OnItemClickListener {
     private ListView lvContent;
     private LatestNewsBean newsBean;
     private ViewPager mViewPager;
