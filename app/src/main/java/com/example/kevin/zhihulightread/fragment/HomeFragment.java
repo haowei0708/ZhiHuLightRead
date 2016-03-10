@@ -85,9 +85,11 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
         String jsonString = mACache.getAsString(url);
         if (jsonString != null) {
             parseData(jsonString);
+        } else {
+            getDataFromServer();
         }
 
-        getDataFromServer();
+
     }
 
     @Override
@@ -120,7 +122,7 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
                 String jsonString = responseInfo.result;
 
                 //缓存文件
-                mACache.put(url, jsonString, ACache.TIME_DAY);
+                mACache.put(url, jsonString, ACache.TIME_HOUR);
 
                 parseData(jsonString);
             }

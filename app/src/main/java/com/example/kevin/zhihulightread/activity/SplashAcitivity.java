@@ -58,9 +58,11 @@ public class SplashAcitivity extends Activity {
         String jsonString = mACache.getAsString(url);
         if (jsonString != null) {
             parseData(jsonString);
+        } else {
+            //如果有网络
+            getDataFromServer();
         }
-        //如果有网络
-        getDataFromServer();
+
 
 
     }
@@ -75,7 +77,7 @@ public class SplashAcitivity extends Activity {
                 String jsonString = responseInfo.result;
 
                 //缓存文件
-                mACache.put(url, jsonString, ACache.TIME_DAY);
+                mACache.put(url, jsonString, ACache.TIME_HOUR);
 
                 parseData(jsonString);
 

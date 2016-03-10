@@ -18,4 +18,5 @@
     <string name="nav_music">音乐日报</string>
     <string name="nav_cartoon">动漫日报</string>
     <string name="nav_sports">体育日报</string>
+    <string name="version_name">版本号：1.0</string>
 </resources>

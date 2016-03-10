@@ -41,8 +41,7 @@ public abstract class MainFragment extends BaseFragment {
     ListView mListView;
     @Bind(R.id.swipeRefreshLayout)
     SwipeRefreshLayout mSwipeRefreshLayout;
-    @Bind(R.id.iv_background)
-    ImageView mIvBackground;
+
 
     private ThemeBean themeBean;
 
@@ -55,9 +54,9 @@ public abstract class MainFragment extends BaseFragment {
         View rootView = View.inflate(mActivity, R.layout.fragment_main, null);
         mListView = (ListView) rootView.findViewById(R.id.list_view);
         mSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
-        View headerView = View.inflate(mActivity, R.layout.header_main_fragment, null);
-        mIvBackground = (ImageView) headerView.findViewById(R.id.iv_background);
-        mListView.addHeaderView(headerView);
+//        View headerView = View.inflate(mActivity, R.layout.header_main_fragment, null);
+//        mIvBackground = (ImageView) headerView.findViewById(R.id.iv_background);
+//        mListView.addHeaderView(headerView);
 
 
         return rootView;
@@ -71,9 +70,11 @@ public abstract class MainFragment extends BaseFragment {
         String jsonString = mACache.getAsString(url);
         if (jsonString != null) {
             parseData(jsonString);
+        } else {
+            getDataFromServer();
         }
 
-        getDataFromServer();
+
     }
 
     private void getDataFromServer() {
@@ -107,9 +108,6 @@ public abstract class MainFragment extends BaseFragment {
 
     private void initView() {
 
-        Picasso.with(mActivity).load(themeBean.getImage()).into(mIvBackground);
-
-        //      mListView.addHeaderView(mIvBackground);
 
         MyAdapter adapter = new MyAdapter();
         mListView.setAdapter(adapter);
