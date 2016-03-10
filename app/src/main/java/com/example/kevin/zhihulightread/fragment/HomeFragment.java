@@ -1,38 +1,30 @@
 package com.example.kevin.zhihulightread.fragment;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.kevin.zhihulightread.R;
 import com.example.kevin.zhihulightread.activity.WebNewsActivity;
 import com.example.kevin.zhihulightread.base.BaseFragment;
-import com.example.kevin.zhihulightread.bean.LatestNewsBean;
+import com.example.kevin.zhihulightread.model.LatestNewsBean;
 import com.example.kevin.zhihulightread.global.Constants;
-import com.example.kevin.zhihulightread.utils.CacheUtil;
+import com.example.kevin.zhihulightread.utils.ACache;
 import com.example.kevin.zhihulightread.utils.DensityUtil;
 import com.example.kevin.zhihulightread.utils.LogUtils;
-import com.example.kevin.zhihulightread.utils.UIUtils;
 import com.google.gson.Gson;
 import com.lidroid.xutils.BitmapUtils;
 import com.lidroid.xutils.HttpUtils;
@@ -65,18 +57,25 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
     private int refreshTimes = 0;//加载更多次数，用于获取过往的日期
     private boolean isLoadMore;//是否正在加载更多
     private List<LatestNewsBean.StoriesEntity> storiesEntities = new ArrayList<LatestNewsBean.StoriesEntity>();
+    private ACache mACache;
     String url = "http://news-at.zhihu.com/api/4/news/latest";
+
     private String date;
+    private boolean isLoading = false;//判断是否正在加载更多数据
 
 
     /**
      * 初始化数据
      */
     public void initData() {
-        String cache = CacheUtil.getCache(UIUtils.getContext(), url);
-        if (!TextUtils.isEmpty(cache)) {
-            parseData(cache);
+
+        mACache = ACache.get(mActivity);
+        //如果没有网络
+        String jsonString = mACache.getAsString(url);
+        if (jsonString != null){
+            parseData(jsonString);
         }
+
         getDataFromServer();
     }
 
@@ -107,12 +106,12 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
         httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
             @Override
             public void onSuccess(ResponseInfo<String> responseInfo) {
-                String result = responseInfo.result;
+                String jsonString = responseInfo.result;
 
-                //设置缓存
-                CacheUtil.setCache(UIUtils.getContext(), url, result);
+                //缓存文件
+                mACache.put(url,jsonString,ACache.TIME_DAY);
 
-                parseData(result);
+                parseData(jsonString);
             }
 
             @Override
@@ -232,15 +231,19 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
                     if (lvContent.getLastVisiblePosition() == lvContent.getCount() - 1) {//当划到最后一个的时候
                         //加载更多数据
 
-                        //得到before的日期：知乎birthday 2013年5月19 之前没内容，但是我不相信有人能滑到这个时间。、所以不处理
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.add(Calendar.DAY_OF_MONTH, -refreshTimes);
-                        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.CHINA);
-                        date = dateFormat.format(calendar.getTime());
-                        String dateUrl = Constants.URLS.BEFORENEWSURL + date;
-                        LogUtils.sf(dateUrl);
+                        if (!isLoading){
+                            //得到before的日期：知乎birthday 2013年5月19 之前没内容，但是我不相信有人能滑到这个时间。、所以不处理
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.add(Calendar.DAY_OF_MONTH, -refreshTimes);
+                            DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.CHINA);
+                            date = dateFormat.format(calendar.getTime());
+                            String dateUrl = Constants.URLS.BEFORENEWSURL + date;
+                            LogUtils.sf(dateUrl);
 
-                        loadMoreData(dateUrl);
+                            isLoading = true;//表示正在加载
+                            loadMoreData(dateUrl);
+                        }
+
 
                     }
                 }
@@ -266,6 +269,8 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
                 String jsonString = responseInfo.result;
 
                 parseBeforeData(jsonString);
+
+
             }
 
             @Override
@@ -288,6 +293,8 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
         storiesEntities.addAll(stories);
 
         mAdapter.notifyDataSetChanged();
+
+        isLoading = false;//表示加载结束
 
         refreshTimes++;//刷新次数增加一，改变时间
     }
@@ -393,15 +400,6 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
     class ViewHolder {
         ImageView icon;
         TextView tvTitle;
-    }
-
-    /**
-     * 将数字日期转换位带中文的日期20160302--->2016年03月02日
-     *
-     * @return
-     */
-    private String convertDate() {
-        return null;
     }
 
     /**

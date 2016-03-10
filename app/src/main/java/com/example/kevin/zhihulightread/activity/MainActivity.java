@@ -2,6 +2,7 @@ package com.example.kevin.zhihulightread.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.internal.NavigationMenu;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity
 
         MainPagerAdapter adapter = new MainPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(adapter);
+
 
 //        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
     }

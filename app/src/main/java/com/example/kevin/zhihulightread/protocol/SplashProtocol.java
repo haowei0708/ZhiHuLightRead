@@ -1,8 +1,7 @@
 package com.example.kevin.zhihulightread.protocol;
 
 import com.example.kevin.zhihulightread.base.BaseProtocol;
-import com.example.kevin.zhihulightread.bean.StartImageBean;
-import com.example.kevin.zhihulightread.utils.LogUtils;
+import com.example.kevin.zhihulightread.model.StartImageBean;
 import com.google.gson.Gson;
 
 /**

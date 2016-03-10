@@ -5,4 +5,17 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">关于我</string>
+    <string name="nav_home">首页</string>
+    <string name="nav_psychology">日常心理学</string>
+    <string name="nav_recommend">用户推荐日报</string>
+    <string name="nav_movie">电影日报</string>
+    <string name="nav_no_bored">不许无聊</string>
+    <string name="nav_design">设计日报</string>
+    <string name="nav_company">大公司日报</string>
+    <string name="nav_business">财经日报</string>
+    <string name="nav_net_safe">互联网安全</string>
+    <string name="nav_start_game">开始游戏</string>
+    <string name="nav_music">音乐日报</string>
+    <string name="nav_cartoon">动漫日报</string>
+    <string name="nav_sports">体育日报</string>
 </resources>

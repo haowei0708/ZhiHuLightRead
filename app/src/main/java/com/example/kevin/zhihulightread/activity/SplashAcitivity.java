@@ -2,9 +2,8 @@ package com.example.kevin.zhihulightread.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -12,24 +11,24 @@ import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 
 import com.example.kevin.zhihulightread.R;
-import com.example.kevin.zhihulightread.bean.StartImageBean;
-import com.example.kevin.zhihulightread.protocol.SplashProtocol;
-import com.example.kevin.zhihulightread.utils.CacheUtil;
-import com.example.kevin.zhihulightread.utils.LogUtils;
-import com.example.kevin.zhihulightread.utils.UIUtils;
+import com.example.kevin.zhihulightread.model.StartImageBean;
+import com.example.kevin.zhihulightread.utils.ACache;
 import com.google.gson.Gson;
-import com.lidroid.xutils.BitmapUtils;
 import com.lidroid.xutils.HttpUtils;
 import com.lidroid.xutils.exception.HttpException;
 import com.lidroid.xutils.http.ResponseInfo;
 import com.lidroid.xutils.http.callback.RequestCallBack;
 import com.lidroid.xutils.http.client.HttpRequest;
+import com.squareup.picasso.Picasso;
+
 
 
 public class SplashAcitivity extends Activity {
 
     private ImageView ivStart;
+    private boolean isCache = false;
     String url = "http://news-at.zhihu.com/api/4/start-image/1080*1776";
+    private ACache mACache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +38,7 @@ public class SplashAcitivity extends Activity {
 
         setContentView(R.layout.activity_splash_acitivity);
 
+
         ivStart = (ImageView) findViewById(R.id.iv_start);
         initData();
     }
@@ -47,12 +47,18 @@ public class SplashAcitivity extends Activity {
      * 初始化数据
      */
     private void initData() {
-        String jsonString = CacheUtil.getCache(SplashAcitivity.this, url);
 
-        if (!TextUtils.isEmpty(jsonString)){
+        mACache = ACache.get(this);
+
+        //如果没有网络
+        String jsonString = mACache.getAsString(url);
+        if (jsonString != null){
             parseData(jsonString);
         }
+        //如果有网络
         getDataFromServer();
+
+
     }
 
     private void getDataFromServer() {
@@ -64,11 +70,10 @@ public class SplashAcitivity extends Activity {
             public void onSuccess(ResponseInfo<String> responseInfo) {
                 String jsonString = responseInfo.result;
 
-                //设置缓存
-                CacheUtil.setCache(SplashAcitivity.this,url,jsonString);
+                //缓存文件
+                mACache.put(url,jsonString,ACache.TIME_DAY);
 
                 parseData(jsonString);
-
 
             }
 
@@ -81,6 +86,7 @@ public class SplashAcitivity extends Activity {
 
     /**
      * 解析数据
+     *
      * @param jsonString json字符串
      */
     private void parseData(String jsonString) {
@@ -93,14 +99,14 @@ public class SplashAcitivity extends Activity {
 
     private void initView(String imgUrl) {
 
-        BitmapUtils bitmapUtils = new BitmapUtils(this);
-        bitmapUtils.display(ivStart,imgUrl);
+        //加载图片
+        Picasso.with(this).load(imgUrl).into(ivStart);
 
         initAnimation();
     }
 
     private void initAnimation() {
-        ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f,1.1f,1.0f,1.1f, Animation.RELATIVE_TO_SELF,0.5f,Animation.RELATIVE_TO_SELF,0.5f);
+        ScaleAnimation scaleAnimation = new ScaleAnimation(1.0f, 1.1f, 1.0f, 1.1f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         scaleAnimation.setDuration(2000);
         scaleAnimation.setFillAfter(true);
         //对动画进行监听，结束后进入主界面
@@ -112,7 +118,7 @@ public class SplashAcitivity extends Activity {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                startActivity(new Intent(SplashAcitivity.this,MainActivity.class));
+                startActivity(new Intent(SplashAcitivity.this, MainActivity.class));
                 finish();
             }
 

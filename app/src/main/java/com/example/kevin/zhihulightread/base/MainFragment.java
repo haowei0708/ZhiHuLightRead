@@ -1,39 +1,31 @@
 package com.example.kevin.zhihulightread.base;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.kevin.zhihulightread.R;
-import com.example.kevin.zhihulightread.activity.MainActivity;
 import com.example.kevin.zhihulightread.activity.WebNewsActivity;
-import com.example.kevin.zhihulightread.base.BaseFragment;
-import com.example.kevin.zhihulightread.bean.ThemeBean;
+import com.example.kevin.zhihulightread.model.ThemeBean;
 import com.example.kevin.zhihulightread.global.Constants;
-import com.example.kevin.zhihulightread.utils.BitmapHelper;
-import com.example.kevin.zhihulightread.utils.LogUtils;
+import com.example.kevin.zhihulightread.utils.ACache;
 import com.google.gson.Gson;
-import com.lidroid.xutils.BitmapUtils;
 import com.lidroid.xutils.HttpUtils;
 import com.lidroid.xutils.exception.HttpException;
 import com.lidroid.xutils.http.ResponseInfo;
 import com.lidroid.xutils.http.callback.RequestCallBack;
 import com.lidroid.xutils.http.client.HttpRequest;
+import com.squareup.picasso.Picasso;
 
 /**
  * 作者：Created by Kevin on 2016/3/3.
@@ -47,6 +39,8 @@ public abstract class MainFragment extends BaseFragment {
     private ImageView mIvBackground; //背景图片
     private ThemeBean themeBean;
     private SwipeRefreshLayout mSwipeRefreshLayout;//下拉刷新
+    String url = "http://news-at.zhihu.com/api/4/theme/" + getThemeID();
+    private ACache mACache;
 
     @Override
     protected View initView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,16 +58,27 @@ public abstract class MainFragment extends BaseFragment {
 
     @Override
     protected void initData() {
+        mACache = ACache.get(mActivity);
+
+        //如果没有网络
+        String jsonString = mACache.getAsString(url);
+        if (jsonString != null){
+            parseData(jsonString);
+        }
+
         getDataFromServer();
     }
 
     private void getDataFromServer() {
-        String url = "http://news-at.zhihu.com/api/4/theme/" + getThemeID();
+
         HttpUtils httpUtils = new HttpUtils();
         httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
             @Override
             public void onSuccess(ResponseInfo<String> responseInfo) {
                 String jsonString = responseInfo.result;
+                //缓存文件
+                mACache.put(url,jsonString,ACache.TIME_HOUR);
+
                 parseData(jsonString);
             }
 
@@ -94,7 +99,8 @@ public abstract class MainFragment extends BaseFragment {
     }
 
     private void initView() {
-        BitmapHelper.display(mIvBackground, themeBean.getImage());
+
+        Picasso.with(mActivity).load(themeBean.getImage()).into(mIvBackground);
 
         //      mListView.addHeaderView(mIvBackground);
 
@@ -185,7 +191,8 @@ public abstract class MainFragment extends BaseFragment {
 
             if (themeBean.getStories().get(position).getImages() != null){
                 holder.icon.setVisibility(View.VISIBLE);
-                BitmapHelper.display(holder.icon, themeBean.getStories().get(position).getImages().get(0));
+
+                Picasso.with(mActivity).load(themeBean.getStories().get(position).getImages().get(0)).into(holder.icon);
             } else {
                 holder.icon.setVisibility(View.GONE);
             }

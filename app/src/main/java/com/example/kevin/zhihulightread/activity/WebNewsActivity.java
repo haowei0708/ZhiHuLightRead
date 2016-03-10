@@ -14,7 +14,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.kevin.zhihulightread.R;
-import com.example.kevin.zhihulightread.bean.NewsDetailBean;
+import com.example.kevin.zhihulightread.model.NewsDetailBean;
+import com.example.kevin.zhihulightread.utils.ACache;
 import com.example.kevin.zhihulightread.utils.LogUtils;
 import com.google.gson.Gson;
 import com.lidroid.xutils.BitmapUtils;
@@ -23,6 +24,7 @@ import com.lidroid.xutils.exception.HttpException;
 import com.lidroid.xutils.http.ResponseInfo;
 import com.lidroid.xutils.http.callback.RequestCallBack;
 import com.lidroid.xutils.http.client.HttpRequest;
+import com.squareup.picasso.Picasso;
 
 /**
  * 内容的HTML网页数据
@@ -35,6 +37,8 @@ public class WebNewsActivity extends AppCompatActivity {
     private TextView tvDesc; //图片的版权信息
     private NewsDetailBean detailBean;
     private ProgressBar progressBar;//进度条
+    private ACache mACache;
+    private String mUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,12 +66,12 @@ public class WebNewsActivity extends AppCompatActivity {
         });
 
         settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-//        // 开启DOM storage API 功能
-//        settings.setDomStorageEnabled(true);
-//        // 开启database storage API功能
-//        settings.setDatabaseEnabled(true);
-//        // 开启Application Cache功能
-//        settings.setAppCacheEnabled(true);
+        // 开启DOM storage API 功能
+        settings.setDomStorageEnabled(true);
+        // 开启database storage API功能
+        settings.setDatabaseEnabled(true);
+        // 开启Application Cache功能
+        settings.setAppCacheEnabled(true);
 
         settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
 
@@ -101,9 +105,16 @@ public class WebNewsActivity extends AppCompatActivity {
         });
 
 
-        String url = getIntent().getStringExtra("webUrl");
+        mUrl = getIntent().getStringExtra("webUrl");
 
-        getDataFromServer(url);
+        //读取缓存
+        mACache = ACache.get(this);
+        //如果没有网络
+        String jsonString = mACache.getAsString(mUrl);
+        if (jsonString != null){
+            parseData(jsonString);
+        }
+        getDataFromServer();
 
 
     }
@@ -111,15 +122,16 @@ public class WebNewsActivity extends AppCompatActivity {
     /**
      * 从网络获取数据
      *
-     * @param url
      */
-    private void getDataFromServer(String url) {
+    private void getDataFromServer() {
         HttpUtils httpUtils = new HttpUtils();
-        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+        httpUtils.send(HttpRequest.HttpMethod.GET, mUrl, new RequestCallBack<String>() {
             @Override
             public void onSuccess(ResponseInfo<String> responseInfo) {
                 String jsonString = responseInfo.result;
-                LogUtils.s(jsonString);
+
+                //缓存文件
+                mACache.put(mUrl,jsonString,ACache.TIME_DAY);
 
                 parseData(jsonString);
             }
@@ -140,8 +152,8 @@ public class WebNewsActivity extends AppCompatActivity {
         Gson gson = new Gson();
         detailBean = gson.fromJson(jsonString, NewsDetailBean.class);
 
-        BitmapUtils bitmapUtils = new BitmapUtils(this);
-        bitmapUtils.display(imageView, detailBean.getImage());
+        //标题图片加载
+        Picasso.with(this).load(detailBean.getImage()).into(imageView);
 
         //webView加载内容
         String css = "<link rel=\"stylesheet\" href=\"file:///android_asset/css/news.css\" type=\"text/css\">";

@@ -1,4 +1,5 @@
-package com.example.kevin.zhihulightread.bean;
+package com.example.kevin.zhihulightread.model;
+
 
 import java.util.List;
 

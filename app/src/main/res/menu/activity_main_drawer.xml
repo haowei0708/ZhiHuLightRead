@@ -5,56 +5,56 @@
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_home_black_24dp_1x"
-            android:title="首页" />
+            android:title="@string/nav_home" />
         <item
             android:id="@+id/nav_psychology"
             android:icon="@drawable/ic_favorite_black_24dp"
-            android:title="日常心理学" />
+            android:title="@string/nav_psychology" />
 
         <item
             android:id="@+id/nav_recommend"
             android:icon="@drawable/ic_assignment_ind_black_24dp"
-            android:title="用户推荐日报" />
+            android:title="@string/nav_recommend" />
         <item
             android:id="@+id/nav_movie"
             android:icon="@drawable/ic_theaters_black_24dp"
-            android:title="电影日报" />
+            android:title="@string/nav_movie" />
         <item
             android:id="@+id/nav_no_bored"
             android:icon="@drawable/ic_highlight_off_black_24dp"
-            android:title="不许无聊" />
+            android:title="@string/nav_no_bored" />
         <item
             android:id="@+id/nav_design"
             android:icon="@drawable/ic_translate_black_24dp"
-            android:title="设计日报" />
+            android:title="@string/nav_design" />
         <item
             android:id="@+id/nav_company"
             android:icon="@drawable/ic_account_balance_black_24dp"
-            android:title="大公司日报" />
+            android:title="@string/nav_company" />
         <item
             android:id="@+id/nav_business"
             android:icon="@drawable/ic_trending_up_black_24dp"
-            android:title="财经日报" />
+            android:title="@string/nav_business" />
         <item
             android:id="@+id/nav_net_safe"
             android:icon="@drawable/ic_important_devices_black_24dp"
-            android:title="互联网安全" />
+            android:title="@string/nav_net_safe" />
         <item
             android:id="@+id/nav_start_game"
             android:icon="@drawable/ic_rowing_black_24dp"
-            android:title="开始游戏" />
+            android:title="@string/nav_start_game" />
         <item
             android:id="@+id/nav_music"
             android:icon="@drawable/ic_library_music_black_24dp"
-            android:title="音乐日报" />
+            android:title="@string/nav_music" />
         <item
             android:id="@+id/nav_cartoon"
             android:icon="@drawable/ic_face_black_24dp"
-            android:title="动漫日报" />
+            android:title="@string/nav_cartoon" />
         <item
             android:id="@+id/nav_sports"
             android:icon="@drawable/ic_accessibility_black_24dp"
-            android:title="体育日报" />
+            android:title="@string/nav_sports" />
     </group>
 
 

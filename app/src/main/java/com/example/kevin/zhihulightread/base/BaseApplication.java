@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+
 /**
  * 作者：Created by Kevin on 2016/1/24.
  * 邮箱：haowei0708@163.com
@@ -21,6 +22,7 @@ public class BaseApplication extends Application {
 
     @Override
     public void onCreate() {//程序的入口
+
         //常用的属性
         context = getApplicationContext();
 
