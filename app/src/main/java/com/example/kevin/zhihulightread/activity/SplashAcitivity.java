@@ -2,7 +2,6 @@ package com.example.kevin.zhihulightread.activity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
@@ -21,11 +20,16 @@ import com.lidroid.xutils.http.callback.RequestCallBack;
 import com.lidroid.xutils.http.client.HttpRequest;
 import com.squareup.picasso.Picasso;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 
 public class SplashAcitivity extends Activity {
 
-    private ImageView ivStart;
+
+    @Bind(R.id.iv_start)
+    ImageView mIvStart;
+
     private boolean isCache = false;
     String url = "http://news-at.zhihu.com/api/4/start-image/1080*1776";
     private ACache mACache;
@@ -37,9 +41,9 @@ public class SplashAcitivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_splash_acitivity);
+        ButterKnife.bind(this);
 
 
-        ivStart = (ImageView) findViewById(R.id.iv_start);
         initData();
     }
 
@@ -52,7 +56,7 @@ public class SplashAcitivity extends Activity {
 
         //如果没有网络
         String jsonString = mACache.getAsString(url);
-        if (jsonString != null){
+        if (jsonString != null) {
             parseData(jsonString);
         }
         //如果有网络
@@ -71,7 +75,7 @@ public class SplashAcitivity extends Activity {
                 String jsonString = responseInfo.result;
 
                 //缓存文件
-                mACache.put(url,jsonString,ACache.TIME_DAY);
+                mACache.put(url, jsonString, ACache.TIME_DAY);
 
                 parseData(jsonString);
 
@@ -100,7 +104,7 @@ public class SplashAcitivity extends Activity {
     private void initView(String imgUrl) {
 
         //加载图片
-        Picasso.with(this).load(imgUrl).into(ivStart);
+        Picasso.with(this).load(imgUrl).into(mIvStart);
 
         initAnimation();
     }
@@ -128,7 +132,7 @@ public class SplashAcitivity extends Activity {
             }
         });
 
-        ivStart.startAnimation(scaleAnimation);
+        mIvStart.startAnimation(scaleAnimation);
 
     }
 

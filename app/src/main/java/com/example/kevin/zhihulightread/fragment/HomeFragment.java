@@ -20,8 +20,8 @@ import android.widget.TextView;
 import com.example.kevin.zhihulightread.R;
 import com.example.kevin.zhihulightread.activity.WebNewsActivity;
 import com.example.kevin.zhihulightread.base.BaseFragment;
-import com.example.kevin.zhihulightread.model.LatestNewsBean;
 import com.example.kevin.zhihulightread.global.Constants;
+import com.example.kevin.zhihulightread.model.LatestNewsBean;
 import com.example.kevin.zhihulightread.utils.ACache;
 import com.example.kevin.zhihulightread.utils.DensityUtil;
 import com.example.kevin.zhihulightread.utils.LogUtils;
@@ -40,17 +40,27 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * 作者：Created by Kevin on 2016/2/19.
  * 邮箱：haowei0708@163.com
  * 描页面内容的Fragment
  */
 public class HomeFragment extends BaseFragment implements AdapterView.OnItemClickListener {
-    private ListView lvContent;
-    private LatestNewsBean newsBean;
-    private ViewPager mViewPager;
-    private TextView mTvTitle;
-    private LinearLayout llContainer; //点的容器
+
+    @Bind(R.id.lv_content)
+    ListView mLvContent;
+    @Bind(R.id.swipeRefreshLayout)
+    SwipeRefreshLayout mSwipeRefreshLayout;
+    @Bind(R.id.view_pager)
+    ViewPager mViewPager;
+    @Bind(R.id.ll_container)
+    LinearLayout mLlContainer; //点的容器
+    @Bind(R.id.tv_title)
+    TextView mTvTitle;
+
     private SwipeRefreshLayout swipeRefreshLayout;//下拉刷新
     private ListViewContentAdapter mAdapter;
     private boolean isNoDot = true;
@@ -62,6 +72,7 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
 
     private String date;
     private boolean isLoading = false;//判断是否正在加载更多数据
+    private LatestNewsBean mNewsBean;
 
 
     /**
@@ -72,7 +83,7 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
         mACache = ACache.get(mActivity);
         //如果没有网络
         String jsonString = mACache.getAsString(url);
-        if (jsonString != null){
+        if (jsonString != null) {
             parseData(jsonString);
         }
 
@@ -84,14 +95,14 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
         View view = View.inflate(mActivity, R.layout.fragment_content, null);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
 
-        lvContent = (ListView) view.findViewById(R.id.lv_content);
+        mLvContent = (ListView) view.findViewById(R.id.lv_content);
         View headerView = View.inflate(mActivity, R.layout.header_view_pager, null);
         mViewPager = (ViewPager) headerView.findViewById(R.id.view_pager);
-        llContainer = (LinearLayout) headerView.findViewById(R.id.ll_container);//小点的容器
+        mLlContainer = (LinearLayout) headerView.findViewById(R.id.ll_container);//小点的容器
 
         mTvTitle = (TextView) headerView.findViewById(R.id.tv_title);
         //添加头布局
-        lvContent.addHeaderView(headerView);
+        mLvContent.addHeaderView(headerView);
 
 
         return view;
@@ -109,7 +120,7 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
                 String jsonString = responseInfo.result;
 
                 //缓存文件
-                mACache.put(url,jsonString,ACache.TIME_DAY);
+                mACache.put(url, jsonString, ACache.TIME_DAY);
 
                 parseData(jsonString);
             }
@@ -128,35 +139,35 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
      */
     private void parseData(String result) {
         Gson gson = new Gson();
-        newsBean = gson.fromJson(result, LatestNewsBean.class);
+        mNewsBean = gson.fromJson(result, LatestNewsBean.class);
         //设置viewpager
         ViewPagerContentAdapter viewPageradapter = new ViewPagerContentAdapter();
         mViewPager.setAdapter(viewPageradapter);
 
         if (isNoDot) {
             //动态添加点
-            addPoints(newsBean.getTop_stories().size());
+            addPoints(mNewsBean.getTop_stories().size());
 
             isNoDot = false;
         }
 
 
         //实现无限轮播的左边
-        int extra = Integer.MAX_VALUE / 2 % newsBean.getTop_stories().size();
+        int extra = Integer.MAX_VALUE / 2 % mNewsBean.getTop_stories().size();
         int index = Integer.MAX_VALUE / 2 - extra;
         mViewPager.setCurrentItem(index);
 
 
         //设置listView
         mAdapter = new ListViewContentAdapter();
-        storiesEntities = newsBean.getStories();
-        lvContent.setAdapter(mAdapter);
+        storiesEntities = mNewsBean.getStories();
+        mLvContent.setAdapter(mAdapter);
 
-        lvContent.setOnItemClickListener(this);
+        mLvContent.setOnItemClickListener(this);
 
 
         //初始化第一个图像的标题
-        mTvTitle.setText(newsBean.getTop_stories().get(0).getTitle());
+        mTvTitle.setText(mNewsBean.getTop_stories().get(0).getTitle());
 
         initEvent();
     }
@@ -176,13 +187,13 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
 
             @Override
             public void onPageSelected(int position) {
-                position = position % newsBean.getTop_stories().size();
-                mTvTitle.setText(newsBean.getTop_stories().get(position).getTitle());
+                position = position % mNewsBean.getTop_stories().size();
+                mTvTitle.setText(mNewsBean.getTop_stories().get(position).getTitle());
 
-                for (int i = 0; i < newsBean.getTop_stories().size(); i++) {
-                    position = position % newsBean.getTop_stories().size();
+                for (int i = 0; i < mNewsBean.getTop_stories().size(); i++) {
+                    position = position % mNewsBean.getTop_stories().size();
                     //还原背景
-                    View indicatorView = llContainer.getChildAt(i);
+                    View indicatorView = mLlContainer.getChildAt(i);
                     indicatorView.setBackgroundResource(R.drawable.dot_normal);
 
                     if (i == position) {
@@ -223,15 +234,15 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
             }
         });
 
-        lvContent.setOnScrollListener(new AbsListView.OnScrollListener() {
+        mLvContent.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 if (scrollState == SCROLL_STATE_IDLE || scrollState == SCROLL_STATE_FLING) {
 
-                    if (lvContent.getLastVisiblePosition() == lvContent.getCount() - 1) {//当划到最后一个的时候
+                    if (mLvContent.getLastVisiblePosition() == mLvContent.getCount() - 1) {//当划到最后一个的时候
                         //加载更多数据
 
-                        if (!isLoading){
+                        if (!isLoading) {
                             //得到before的日期：知乎birthday 2013年5月19 之前没内容，但是我不相信有人能滑到这个时间。、所以不处理
                             Calendar calendar = Calendar.getInstance();
                             calendar.add(Calendar.DAY_OF_MONTH, -refreshTimes);
@@ -318,7 +329,7 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
                 indicatorView.setBackgroundResource(R.drawable.dot_focus);
             }
 
-            llContainer.addView(indicatorView);
+            mLlContainer.addView(indicatorView);
         }
     }
 
@@ -335,7 +346,7 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
 
         if (position > 0) {//由于有headView
             //获取到点击的item的id
-            int newsID = newsBean.getStories().get(position - 1).getId();
+            int newsID = mNewsBean.getStories().get(position - 1).getId();
             String url = Constants.URLS.NEWSURL + newsID;
 
             Intent intent = new Intent(mActivity, WebNewsActivity.class);
@@ -343,6 +354,20 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
             startActivity(intent);
         }
 
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // TODO: inflate a fragment view
+        View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        ButterKnife.bind(this, rootView);
+        return rootView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
     }
 
 
@@ -421,9 +446,9 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
         public Object instantiateItem(ViewGroup container, int position) {
 
             //实现无限轮播
-            position = position % newsBean.getTop_stories().size();
+            position = position % mNewsBean.getTop_stories().size();
 
-            final LatestNewsBean.TopStoriesEntity topStoriesEntity = newsBean.getTop_stories().get(position);
+            final LatestNewsBean.TopStoriesEntity topStoriesEntity = mNewsBean.getTop_stories().get(position);
 
             ImageView iv = new ImageView(mActivity);
             iv.setScaleType(ImageView.ScaleType.FIT_XY);

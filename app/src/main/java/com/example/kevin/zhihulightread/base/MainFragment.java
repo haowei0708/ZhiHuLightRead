@@ -3,7 +3,6 @@ package com.example.kevin.zhihulightread.base;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +15,8 @@ import android.widget.TextView;
 
 import com.example.kevin.zhihulightread.R;
 import com.example.kevin.zhihulightread.activity.WebNewsActivity;
-import com.example.kevin.zhihulightread.model.ThemeBean;
 import com.example.kevin.zhihulightread.global.Constants;
+import com.example.kevin.zhihulightread.model.ThemeBean;
 import com.example.kevin.zhihulightread.utils.ACache;
 import com.google.gson.Gson;
 import com.lidroid.xutils.HttpUtils;
@@ -27,6 +26,9 @@ import com.lidroid.xutils.http.callback.RequestCallBack;
 import com.lidroid.xutils.http.client.HttpRequest;
 import com.squareup.picasso.Picasso;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * 作者：Created by Kevin on 2016/3/3.
  * 邮箱：haowei0708@163.com
@@ -34,11 +36,17 @@ import com.squareup.picasso.Picasso;
  */
 public abstract class MainFragment extends BaseFragment {
 
-    private ViewPager mViewPager;
-    private ListView mListView;
-    private ImageView mIvBackground; //背景图片
+
+    @Bind(R.id.list_view)
+    ListView mListView;
+    @Bind(R.id.swipeRefreshLayout)
+    SwipeRefreshLayout mSwipeRefreshLayout;
+    @Bind(R.id.iv_background)
+    ImageView mIvBackground;
+
     private ThemeBean themeBean;
-    private SwipeRefreshLayout mSwipeRefreshLayout;//下拉刷新
+
+
     String url = "http://news-at.zhihu.com/api/4/theme/" + getThemeID();
     private ACache mACache;
 
@@ -52,7 +60,6 @@ public abstract class MainFragment extends BaseFragment {
         mListView.addHeaderView(headerView);
 
 
-
         return rootView;
     }
 
@@ -62,7 +69,7 @@ public abstract class MainFragment extends BaseFragment {
 
         //如果没有网络
         String jsonString = mACache.getAsString(url);
-        if (jsonString != null){
+        if (jsonString != null) {
             parseData(jsonString);
         }
 
@@ -77,7 +84,7 @@ public abstract class MainFragment extends BaseFragment {
             public void onSuccess(ResponseInfo<String> responseInfo) {
                 String jsonString = responseInfo.result;
                 //缓存文件
-                mACache.put(url,jsonString,ACache.TIME_HOUR);
+                mACache.put(url, jsonString, ACache.TIME_HOUR);
 
                 parseData(jsonString);
             }
@@ -153,6 +160,20 @@ public abstract class MainFragment extends BaseFragment {
         });
     }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // TODO: inflate a fragment view
+        View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        ButterKnife.bind(this, rootView);
+        return rootView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+
     private class MyAdapter extends BaseAdapter {
 
         @Override
@@ -189,7 +210,7 @@ public abstract class MainFragment extends BaseFragment {
 
             holder.tvTitle.setText(themeBean.getStories().get(position).getTitle());
 
-            if (themeBean.getStories().get(position).getImages() != null){
+            if (themeBean.getStories().get(position).getImages() != null) {
                 holder.icon.setVisibility(View.VISIBLE);
 
                 Picasso.with(mActivity).load(themeBean.getStories().get(position).getImages().get(0)).into(holder.icon);
