@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,15 +20,13 @@ import com.example.kevin.zhihulightread.global.Constants;
 import com.example.kevin.zhihulightread.model.ThemeBean;
 import com.example.kevin.zhihulightread.utils.ACache;
 import com.google.gson.Gson;
-import com.lidroid.xutils.HttpUtils;
-import com.lidroid.xutils.exception.HttpException;
-import com.lidroid.xutils.http.ResponseInfo;
-import com.lidroid.xutils.http.callback.RequestCallBack;
-import com.lidroid.xutils.http.client.HttpRequest;
 import com.squareup.picasso.Picasso;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.StringCallback;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import okhttp3.Call;
 
 /**
  * 作者：Created by Kevin on 2016/3/3.
@@ -79,22 +78,22 @@ public abstract class MainFragment extends BaseFragment {
 
     private void getDataFromServer() {
 
-        HttpUtils httpUtils = new HttpUtils();
-        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+        OkHttpUtils.get().url(url).build().execute(new StringCallback() {
             @Override
-            public void onSuccess(ResponseInfo<String> responseInfo) {
-                String jsonString = responseInfo.result;
-                //缓存文件
-                mACache.put(url, jsonString, ACache.TIME_HOUR);
-
-                parseData(jsonString);
+            public void onError(Call call, Exception e) {
+                Log.e(Constants.TAG, "onError :" + e.getMessage());
             }
 
             @Override
-            public void onFailure(HttpException error, String msg) {
-                System.out.println("error" + error);
+            public void onResponse(String response) {
+                //缓存文件
+                mACache.put(url, response, ACache.TIME_HOUR);
+
+                parseData(response);
             }
         });
+
+
     }
 
     public abstract String getThemeID();

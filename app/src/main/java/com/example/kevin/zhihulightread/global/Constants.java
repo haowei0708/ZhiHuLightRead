@@ -12,6 +12,7 @@ public class Constants {
     public static final int DEBUGLEVEL = LogUtils.LEVEL_ALL;
     public static final long PROTOCOLTIMEOUT =  1000*60*60*24*5;//保存5天
     public static final int PAGESIZE = 20;
+    public static final String TAG = "ZhiHuLightRead";
 
     public static final class URLS{
         public static String BASEURL = "http://news-at.zhihu.com/api/4/";

@@ -1,8 +1,9 @@
 package com.example.kevin.zhihulightread.activity;
 
 import android.graphics.Bitmap;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -14,17 +15,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.kevin.zhihulightread.R;
+import com.example.kevin.zhihulightread.global.Constants;
 import com.example.kevin.zhihulightread.model.NewsDetailBean;
 import com.example.kevin.zhihulightread.utils.ACache;
-import com.example.kevin.zhihulightread.utils.LogUtils;
 import com.google.gson.Gson;
-import com.lidroid.xutils.BitmapUtils;
-import com.lidroid.xutils.HttpUtils;
-import com.lidroid.xutils.exception.HttpException;
-import com.lidroid.xutils.http.ResponseInfo;
-import com.lidroid.xutils.http.callback.RequestCallBack;
-import com.lidroid.xutils.http.client.HttpRequest;
 import com.squareup.picasso.Picasso;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.StringCallback;
+
+import okhttp3.Call;
 
 /**
  * 内容的HTML网页数据
@@ -124,23 +123,22 @@ public class WebNewsActivity extends AppCompatActivity {
      *
      */
     private void getDataFromServer() {
-        HttpUtils httpUtils = new HttpUtils();
-        httpUtils.send(HttpRequest.HttpMethod.GET, mUrl, new RequestCallBack<String>() {
+
+        OkHttpUtils.get().url(mUrl).build().execute(new StringCallback() {
             @Override
-            public void onSuccess(ResponseInfo<String> responseInfo) {
-                String jsonString = responseInfo.result;
-
-                //缓存文件
-                mACache.put(mUrl,jsonString,ACache.TIME_DAY);
-
-                parseData(jsonString);
+            public void onError(Call call, Exception e) {
+                Log.e(Constants.TAG, "onError :" + e.getMessage());
             }
 
             @Override
-            public void onFailure(HttpException e, String s) {
-                System.out.println("error:" + e);
+            public void onResponse(String response) {
+                //缓存文件
+                mACache.put(mUrl, response, ACache.TIME_DAY);
+
+                parseData(response);
             }
         });
+
     }
 
     /**

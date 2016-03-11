@@ -6,6 +6,7 @@ import android.os.SystemClock;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,12 +27,9 @@ import com.example.kevin.zhihulightread.utils.ACache;
 import com.example.kevin.zhihulightread.utils.DensityUtil;
 import com.example.kevin.zhihulightread.utils.LogUtils;
 import com.google.gson.Gson;
-import com.lidroid.xutils.BitmapUtils;
-import com.lidroid.xutils.HttpUtils;
-import com.lidroid.xutils.exception.HttpException;
-import com.lidroid.xutils.http.ResponseInfo;
-import com.lidroid.xutils.http.callback.RequestCallBack;
-import com.lidroid.xutils.http.client.HttpRequest;
+import com.squareup.picasso.Picasso;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -42,6 +40,7 @@ import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import okhttp3.Call;
 
 /**
  * 作者：Created by Kevin on 2016/2/19.
@@ -115,23 +114,21 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
      */
     private void getDataFromServer() {
 
-        HttpUtils httpUtils = new HttpUtils();
-        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+        OkHttpUtils.get().url(url).build().execute(new StringCallback() {
             @Override
-            public void onSuccess(ResponseInfo<String> responseInfo) {
-                String jsonString = responseInfo.result;
-
-                //缓存文件
-                mACache.put(url, jsonString, ACache.TIME_HOUR);
-
-                parseData(jsonString);
+            public void onError(Call call, Exception e) {
+                Log.e(Constants.TAG, "onError :" + e.getMessage());
             }
 
             @Override
-            public void onFailure(HttpException e, String s) {
-                System.out.println("error:" + e);
+            public void onResponse(String response) {
+                //缓存文件
+                mACache.put(url, response, ACache.TIME_HOUR);
+
+                parseData(response);
             }
         });
+
     }
 
     /**
@@ -251,7 +248,6 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
                             DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.CHINA);
                             date = dateFormat.format(calendar.getTime());
                             String dateUrl = Constants.URLS.BEFORENEWSURL + date;
-                            LogUtils.sf(dateUrl);
 
                             isLoading = true;//表示正在加载
                             loadMoreData(dateUrl);
@@ -275,22 +271,21 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
      * @param dateUrl
      */
     private void loadMoreData(String dateUrl) {
-        HttpUtils httpUtils = new HttpUtils();
-        httpUtils.send(HttpRequest.HttpMethod.GET, dateUrl, new RequestCallBack<String>() {
+
+
+        OkHttpUtils.get().url(dateUrl).build().execute(new StringCallback() {
             @Override
-            public void onSuccess(ResponseInfo<String> responseInfo) {
-                String jsonString = responseInfo.result;
-
-                parseBeforeData(jsonString);
-
+            public void onError(Call call, Exception e) {
+                Log.e(Constants.TAG, "onError :" + e.getMessage());
 
             }
 
             @Override
-            public void onFailure(HttpException error, String msg) {
-                System.out.println("error:" + error);
+            public void onResponse(String response) {
+                parseBeforeData(response);
             }
         });
+
     }
 
     /**
@@ -378,11 +373,6 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
      */
     private class ListViewContentAdapter extends BaseAdapter {
 
-        private final BitmapUtils bitmapUtils;
-
-        public ListViewContentAdapter() {
-            bitmapUtils = new BitmapUtils(mActivity);
-        }
 
         @Override
         public int getCount() {
@@ -418,7 +408,8 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
 
             holder.tvTitle.setText(storiesEntities.get(position).getTitle());
 
-            bitmapUtils.display(holder.icon, storiesEntities.get(position).getImages().get(0));
+
+            Picasso.with(mActivity).load(storiesEntities.get(position).getImages().get(0)).into(holder.icon);
 
             return convertView;
         }
@@ -456,8 +447,9 @@ public class HomeFragment extends BaseFragment implements AdapterView.OnItemClic
             iv.setScaleType(ImageView.ScaleType.FIT_XY);
 
 //            TextView tvTitle = (TextView) headerView.findViewById(R.id.tv_title);
-            BitmapUtils bitmapUtils = new BitmapUtils(mActivity);
-            bitmapUtils.display(iv, topStoriesEntity.getImage());
+
+            Picasso.with(mActivity).load(topStoriesEntity.getImage()).into(iv);
+
 
 //            TextView tv = new TextView(mActivity);
 //            tv.setText(top_stories.title);

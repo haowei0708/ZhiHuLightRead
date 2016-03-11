@@ -3,6 +3,7 @@ package com.example.kevin.zhihulightread.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -10,18 +11,17 @@ import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
 
 import com.example.kevin.zhihulightread.R;
+import com.example.kevin.zhihulightread.global.Constants;
 import com.example.kevin.zhihulightread.model.StartImageBean;
 import com.example.kevin.zhihulightread.utils.ACache;
 import com.google.gson.Gson;
-import com.lidroid.xutils.HttpUtils;
-import com.lidroid.xutils.exception.HttpException;
-import com.lidroid.xutils.http.ResponseInfo;
-import com.lidroid.xutils.http.callback.RequestCallBack;
-import com.lidroid.xutils.http.client.HttpRequest;
 import com.squareup.picasso.Picasso;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.StringCallback;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import okhttp3.Call;
 
 
 public class SplashAcitivity extends Activity {
@@ -70,24 +70,22 @@ public class SplashAcitivity extends Activity {
     private void getDataFromServer() {
 
 
-        HttpUtils httpUtils = new HttpUtils();
-        httpUtils.send(HttpRequest.HttpMethod.GET, url, new RequestCallBack<String>() {
+        OkHttpUtils.get().url(url).build().execute(new StringCallback() {
             @Override
-            public void onSuccess(ResponseInfo<String> responseInfo) {
-                String jsonString = responseInfo.result;
+            public void onError(Call call, Exception e) {
+                Log.e(Constants.TAG, "onError :" + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(String response) {
 
                 //缓存文件
-                mACache.put(url, jsonString, ACache.TIME_HOUR);
+                mACache.put(url, response, ACache.TIME_HOUR);
 
-                parseData(jsonString);
-
-            }
-
-            @Override
-            public void onFailure(HttpException e, String s) {
-                System.out.println("error:" + e);
+                parseData(response);
             }
         });
+
     }
 
     /**
